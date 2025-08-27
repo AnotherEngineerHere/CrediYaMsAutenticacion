@@ -37,7 +37,7 @@ public class UsuarioEntity {
     @Column("telefono")
     private String telefono;
     
-    @Column("rol_id")
+    @Column("id_rol")
     private Long rolId;
 
     @Column("salario_base")
