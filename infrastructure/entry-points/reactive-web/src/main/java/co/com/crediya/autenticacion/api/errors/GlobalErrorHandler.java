@@ -39,6 +39,7 @@ public class GlobalErrorHandler implements ErrorWebExceptionHandler {
         body.put("path", exchange.getRequest().getPath().value());
 
         byte[] bytes;
+
         try {
             bytes = objectMapper.writeValueAsBytes(body);
         } catch (Exception e) {

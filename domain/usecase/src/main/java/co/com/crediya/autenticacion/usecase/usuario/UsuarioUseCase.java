@@ -1,5 +1,6 @@
 package co.com.crediya.autenticacion.usecase.usuario;
 
+import co.com.crediya.autenticacion.model.excepciones.EmailDuplicadoException;
 import co.com.crediya.autenticacion.model.excepciones.EmailInvalidoException;
 import co.com.crediya.autenticacion.model.usuario.Usuario;
 import co.com.crediya.autenticacion.model.usuario.gateways.UsuarioRepository;
@@ -30,9 +31,8 @@ public class UsuarioUseCase {
                 .flatMap(existe -> {
                     if (Boolean.TRUE.equals(existe)) {
                         System.out.println("Error: el email ya existe en el sistema -> " + usuario.getEmail());
-                        return Mono.error(new EmailInvalidoException("El email ya se encuentra registrado"));
+                        return Mono.error(new EmailDuplicadoException("El email ya se encuentra registrado"));
                     }
-                    // Si no existe, proceder a guardar
                     return usuarioRepository.save(usuario)
                             .doOnSuccess(u -> System.out.println("Usuario guardado exitosamente: " + u.getEmail()))
                             .doOnError(e -> System.out.println("Error al guardar usuario con email: "

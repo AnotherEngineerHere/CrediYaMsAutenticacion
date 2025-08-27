@@ -3,8 +3,8 @@ package co.com.crediya.autenticacion.api;
 import co.com.crediya.autenticacion.api.dto.CreateUserDTO;
 import co.com.crediya.autenticacion.api.dto.CreateUserResponse;
 import co.com.crediya.autenticacion.api.dto.ErrorResponse;
-import co.com.crediya.autenticacion.api.exception.EmailDuplicadoException;
 import co.com.crediya.autenticacion.api.mapper.UsuarioMapper;
+import co.com.crediya.autenticacion.model.excepciones.*;
 import co.com.crediya.autenticacion.usecase.usuario.UsuarioUseCase;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -52,11 +52,55 @@ public class Handler {
                             .contentType(MediaType.APPLICATION_JSON)
                             .bodyValue(CreateUserResponse.from(saved));
                 })
-                // --- Mapeo de errores de negocio (409) ---
+                .onErrorResume(NombreVacioException.class, ex ->
+                        ServerResponse.badRequest()
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .bodyValue(ErrorResponse.of("NOMBRE_VACIO", ex.getMessage()))
+                )
+                .onErrorResume(NombreLongitudInvalidaException.class, ex ->
+                        ServerResponse.badRequest()
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .bodyValue(ErrorResponse.of("NOMBRE_LONGITUD_INVALIDA", ex.getMessage()))
+                )
+                .onErrorResume(ApellidoVacioException.class, ex ->
+                        ServerResponse.badRequest()
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .bodyValue(ErrorResponse.of("APELLIDO_VACIO", ex.getMessage()))
+                )
+                .onErrorResume(ApellidoLongitudInvalidaException.class, ex ->
+                        ServerResponse.badRequest()
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .bodyValue(ErrorResponse.of("APELLIDO_LONGITUD_INVALIDA", ex.getMessage()))
+                )
+                .onErrorResume(EmailVacioException.class, ex ->
+                        ServerResponse.badRequest()
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .bodyValue(ErrorResponse.of("EMAIL_VACIO", ex.getMessage()))
+                )
                 .onErrorResume(EmailDuplicadoException.class, ex ->
-                        ServerResponse.status(HttpStatus.CONFLICT)
+                        ServerResponse.status(409)
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .bodyValue(ErrorResponse.of("EMAIL_DUPLICADO", ex.getMessage()))
+                )
+                .onErrorResume(EmailInvalidoException.class, ex ->
+                        ServerResponse.badRequest()
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .bodyValue(ErrorResponse.of("EMAIL_INVALIDO", ex.getMessage()))
+                )
+                .onErrorResume(SalarioBaseException.class, ex ->
+                        ServerResponse.badRequest()
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .bodyValue(ErrorResponse.of("SALARIO_BASE_INVALIDO", ex.getMessage()))
+                )
+                .onErrorResume(PhoneNotvalidException.class, ex ->
+                        ServerResponse.badRequest()
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .bodyValue(ErrorResponse.of("TELEFONO_INVALIDO", ex.getMessage()))
+                )
+                .onErrorResume(RoleNotEmptyException.class, ex ->
+                        ServerResponse.badRequest()
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .bodyValue(ErrorResponse.of("ROL_OBLIGATORIO", ex.getMessage()))
                 )
                 // --- Fallback genérico (500) ---
                 .onErrorResume(ex -> {

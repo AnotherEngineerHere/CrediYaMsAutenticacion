@@ -74,8 +74,8 @@ public class Usuario {
             throw new RoleNotEmptyException("El rol es obligatorio");
         }
 
-        if (salario_base < 0 || salario_base > 1_500_000) {
-            throw new SalarioBaseException("El salario base debe estar entre 0 y 1.500.000");
+        if (salario_base < 0 || salario_base > 15_000_000) {
+            throw new SalarioBaseException("El salario base debe estar entre 0 y 15.000.000");
         }
     }
 
