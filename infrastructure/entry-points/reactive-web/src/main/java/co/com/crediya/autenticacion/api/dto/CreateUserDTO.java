@@ -31,7 +31,7 @@ public class CreateUserDTO {
     private Long rolId;
 
     @Schema(description = "Salario base del usuario", example = "1500000", minimum = "0", maximum = "15000000", required = true)
-    private int salario_base;
+    private Long salario_base;
 
     @Schema(description = "Fecha de nacimiento del usuario", example = "1995-08-15", required = true, format = "date")
     private LocalDate fecha_nacimiento;

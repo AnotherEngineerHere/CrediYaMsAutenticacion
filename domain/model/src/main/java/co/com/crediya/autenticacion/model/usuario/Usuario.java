@@ -20,7 +20,7 @@ public class Usuario {
     private final String documento_identidad;
     private final String telefono;
     private final Long rolId;
-    private final int salario_base;
+    private final Long salario_base;
     private final LocalDate fecha_nacimiento;
     private final String direccion;
 
@@ -36,7 +36,7 @@ public class Usuario {
             String documento_identidad,
             String telefono,
             Long rolId,
-            int salario_base,
+            LOng salario_base,
             LocalDate fecha_nacimiento,
             String direccion
     ) {
@@ -80,7 +80,7 @@ public class Usuario {
             throw new RoleNotEmptyException("El rol es obligatorio");
         }
 
-        if (salario_base < 0 || salario_base > 15_000_000) {
+        if (salario_base < 0 || salario_base > 15000000) {
             throw new SalarioBaseException("El salario base debe estar entre 0 y 15.000.000");
         }
 

@@ -49,6 +49,12 @@ public class UsuarioRepositoryAdapter implements UsuarioRepository {
                 .doOnNext(exists -> log.debug("existsByEmail({}) -> {}", email, exists));
     }
 
+    @Override
+    public Mono<Boolean> existsByDocumentoIdentidad(String documentoIdentidad) {
+        return repository.existsByDocumentoIdentidad(documentoIdentidad)
+                .doOnNext(exists -> log.debug("documentoIdentidad({}) -> {}", documentoIdentidad, exists));
+    }
+
     // -------------------- Mapper manual Entidad <-> Dominio --------------------
     private static Usuario toDomain(UsuarioEntity e) {
         // Usa el builder del dominio (valida invariantes)

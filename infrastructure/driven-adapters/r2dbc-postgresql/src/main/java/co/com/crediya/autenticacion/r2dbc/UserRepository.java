@@ -11,4 +11,6 @@ import java.util.Optional;
 public interface UserRepository extends ReactiveCrudRepository<UsuarioEntity, Long>, ReactiveQueryByExampleExecutor<UsuarioEntity> {
 
     Mono<Boolean> existsByEmail(String email);
+
+    Mono<Boolean> existsByDocumentoIdentidad(String documentoIdentidad);
 }

@@ -87,6 +87,11 @@ public class Handler {
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .bodyValue(ErrorResponse.of("EMAIL_INVALIDO", ex.getMessage()))
                 )
+                .onErrorResume(DocumentoDuplicadoException.class, ex ->
+                        ServerResponse.status(409)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .bodyValue(ErrorResponse.of("DOCUMENTO_DUPLICADO", ex.getMessage()))
+                )
                 .onErrorResume(SalarioBaseException.class, ex ->
                         ServerResponse.badRequest()
                                 .contentType(MediaType.APPLICATION_JSON)
@@ -101,6 +106,11 @@ public class Handler {
                         ServerResponse.badRequest()
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .bodyValue(ErrorResponse.of("ROL_OBLIGATORIO", ex.getMessage()))
+                )
+                .onErrorResume(UsuarioMenorEdadException.class, ex ->
+                        ServerResponse.status(409)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .bodyValue(ErrorResponse.of("USUARIO_MENOR_EDAD", ex.getMessage()))
                 )
                 // --- Fallback genérico (500) ---
                 .onErrorResume(ex -> {
