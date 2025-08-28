@@ -11,7 +11,6 @@ public final class UsuarioMapper {
     public static Usuario toDomain(CreateUserDTO dto) {
         String email = lower(trim(dto.getEmail()));
         String raw = trim(dto.getContrasena());
-        System.out.println("Mapedo del dto: "+dto.toString());
         return Usuario.builder()
                 .nombre(trim(dto.getNombre()))
                 .apellido(trim(dto.getApellido()))

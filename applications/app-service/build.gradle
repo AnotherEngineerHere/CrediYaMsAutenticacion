@@ -2,6 +2,7 @@ apply plugin: 'org.springframework.boot'
 
 dependencies {
 	implementation 'org.reactivecommons.utils:object-mapper:0.1.0'
+    implementation 'org.springdoc:springdoc-openapi-starter-webflux-ui:2.6.0'
     implementation 'org.slf4j:slf4j-api:2.0.13'
 	implementation project(':r2dbc-postgresql')
 	implementation project(':reactive-web')
