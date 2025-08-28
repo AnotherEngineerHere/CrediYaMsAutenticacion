@@ -1,11 +1,11 @@
 package co.com.crediya.autenticacion.model.usuario;
 
 import co.com.crediya.autenticacion.model.excepciones.*;
-import co.com.crediya.autenticacion.model.rol.Rol;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
+import java.time.Period;
 import java.util.Objects;
 import java.util.regex.Pattern;
 
@@ -21,6 +21,8 @@ public class Usuario {
     private final String telefono;
     private final Long rolId;
     private final int salario_base;
+    private final LocalDate fecha_nacimiento;
+    private final String direccion;
 
     private static final Pattern EMAIL_PATTERN =
             Pattern.compile("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$");
@@ -34,7 +36,9 @@ public class Usuario {
             String documento_identidad,
             String telefono,
             Long rolId,
-            int salario_base
+            int salario_base,
+            LocalDate fecha_nacimiento,
+            String direccion
     ) {
         this.nombre = trimOrNull(nombre);
         this.apellido = trimOrNull(apellido);
@@ -44,6 +48,8 @@ public class Usuario {
         this.telefono = trimOrNull(telefono);
         this.rolId = rolId;
         this.salario_base = salario_base;
+        this.fecha_nacimiento = fecha_nacimiento;
+        this.direccion = trimOrNull(direccion);
 
         validarInvariantes();
     }
@@ -77,6 +83,21 @@ public class Usuario {
         if (salario_base < 0 || salario_base > 15_000_000) {
             throw new SalarioBaseException("El salario base debe estar entre 0 y 15.000.000");
         }
+
+        if (fecha_nacimiento == null) {
+            throw new FechaNacimientoVaciaException("La fecha de nacimiento es obligatoria");
+        }
+        if (!esMayorDeEdad(fecha_nacimiento)) {
+            throw new UsuarioMenorEdadException("El usuario debe ser mayor de 18 años");
+        }
+
+        if (direccion == null || direccion.isEmpty()) {
+            throw new DireccionVaciaException("La dirección no puede estar vacía");
+        }
+    }
+
+    private static boolean esMayorDeEdad(LocalDate fechaNacimiento) {
+        return Period.between(fechaNacimiento, LocalDate.now()).getYears() >= 18;
     }
 
     // ---- Validaciones específicas ----

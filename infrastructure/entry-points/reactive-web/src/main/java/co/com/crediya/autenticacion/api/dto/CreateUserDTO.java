@@ -1,8 +1,9 @@
 package co.com.crediya.autenticacion.api.dto;
 
-import co.com.crediya.autenticacion.model.rol.Rol;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
+
+import java.time.LocalDate;
 
 @Data
 @Schema(description = "DTO para crear un nuevo usuario")
@@ -29,6 +30,12 @@ public class CreateUserDTO {
     @Schema(description = "ID del rol asignado al usuario", example = "1", required = true)
     private Long rolId;
 
-    @Schema(description = "Salario base del usuario", example = "1500000", minimum = "0", maximum = "1500000", required = true)
+    @Schema(description = "Salario base del usuario", example = "1500000", minimum = "0", maximum = "15000000", required = true)
     private int salario_base;
+
+    @Schema(description = "Fecha de nacimiento del usuario", example = "1995-08-15", required = true, format = "date")
+    private LocalDate fecha_nacimiento;
+
+    @Schema(description = "Dirección de residencia del usuario", example = "Calle 123 #45-67, Bogotá", required = true)
+    private String direccion;
 }

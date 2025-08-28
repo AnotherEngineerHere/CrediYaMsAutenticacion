@@ -27,9 +27,15 @@ adapters:
     host: localhost
     port: 5432
     database: crediya
-    schema: public
+    schema: auth
     username: admin
     password: admin123
+logging:
+  level:
+    org.springframework.data.r2dbc: DEBUG
+    org.springframework.r2dbc.core: DEBUG
+    io.r2dbc.postgresql.QUERY: DEBUG
+    io.r2dbc.postgresql.PARAM: DEBUG
 
 # OpenAPI Swagger Configuration
 springdoc:

@@ -1,5 +1,7 @@
 package co.com.crediya.autenticacion.r2dbc;
 
+import co.com.crediya.autenticacion.model.excepciones.EmailInvalidoException;
+import co.com.crediya.autenticacion.model.excepciones.EmailVacioException;
 import co.com.crediya.autenticacion.model.usuario.Usuario;
 import co.com.crediya.autenticacion.model.usuario.gateways.UsuarioRepository;
 import co.com.crediya.autenticacion.r2dbc.entity.UsuarioEntity;
@@ -38,10 +40,10 @@ public class UsuarioRepositoryAdapter implements UsuarioRepository {
     @Override
     public Mono<Boolean> findByEmail(String email) {
         if (email == null || email.isBlank()) {
-            return Mono.error(new IllegalArgumentException("El email no puede ser nulo o vacío"));
+            return Mono.error(new EmailVacioException("El email no puede ser nulo o vacío"));
         }
         if (!EMAIL_RX.matcher(email).matches()) {
-            return Mono.error(new IllegalArgumentException("Formato de email inválido"));
+            return Mono.error(new EmailInvalidoException("Formato de email inválido"));
         }
         return repository.existsByEmail(email)
                 .doOnNext(exists -> log.debug("existsByEmail({}) -> {}", email, exists));
@@ -59,6 +61,8 @@ public class UsuarioRepositoryAdapter implements UsuarioRepository {
                 .telefono(e.getTelefono())
                 .rolId(e.getRolId())
                 .salario_base(e.getSalarioBase())
+                .fecha_nacimiento(e.getFechaNacimiento()) // <-- agregado
+                .direccion(e.getDireccion())              // <-- agregado
                 .build();
     }
 
@@ -73,6 +77,8 @@ public class UsuarioRepositoryAdapter implements UsuarioRepository {
                 .telefono(u.getTelefono())
                 .rolId(u.getRolId())
                 .salarioBase(u.getSalario_base())
+                .fechaNacimiento(u.getFecha_nacimiento()) // <-- agregado
+                .direccion(u.getDireccion())              // <-- agregado
                 .build();
     }
 }

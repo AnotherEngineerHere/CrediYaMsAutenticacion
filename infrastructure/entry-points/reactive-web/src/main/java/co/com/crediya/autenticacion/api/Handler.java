@@ -47,7 +47,7 @@ public class Handler {
                 .flatMap(usuarioUseCase::save)
                 .doOnSuccess(saved -> System.out.println("Usuario guardado exitosamente con email: " + saved.getEmail()))
                 .flatMap(saved -> {
-                    URI location = URI.create("/api/v1/usuarios/" + saved.getEmail());
+                    URI location = URI.create("/api/v1/usuarios" + saved.getEmail());
                     return ServerResponse.created(location)
                             .contentType(MediaType.APPLICATION_JSON)
                             .bodyValue(CreateUserResponse.from(saved));
