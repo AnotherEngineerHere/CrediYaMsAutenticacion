@@ -36,7 +36,7 @@ public class CreateUserResponse {
                 .email(u.getEmail())
                 .telefono(u.getTelefono())
                 .rolId(u.getRolId() != null ? u.getRolId() : null)
-                .salario_base(u.getSalario_base())
+                .salario_base(u.getSalario_base() != null ? u.getSalario_base().intValue() : 0)
                 .build();
     }
 }

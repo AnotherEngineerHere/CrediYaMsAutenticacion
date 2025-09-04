@@ -36,7 +36,7 @@ public class Usuario {
             String documento_identidad,
             String telefono,
             Long rolId,
-            LOng salario_base,
+            Long salario_base,
             LocalDate fecha_nacimiento,
             String direccion
     ) {

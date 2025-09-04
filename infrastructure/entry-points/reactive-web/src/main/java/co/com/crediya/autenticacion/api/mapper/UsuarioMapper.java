@@ -2,18 +2,22 @@ package co.com.crediya.autenticacion.api.mapper;
 
 import co.com.crediya.autenticacion.api.dto.CreateUserDTO;
 import co.com.crediya.autenticacion.model.usuario.Usuario;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 public final class UsuarioMapper {
     private UsuarioMapper() {}
 
     public static Usuario toDomain(CreateUserDTO dto) {
+        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
         String email = lower(trim(dto.getEmail()));
-        String raw = trim(dto.getContrasena());
+        String rawPassword = trim(dto.getContrasena());
+        String hashedPassword = encoder.encode(rawPassword);
+
         return Usuario.builder()
                 .nombre(trim(dto.getNombre()))
                 .apellido(trim(dto.getApellido()))
                 .email(email)
-                .contrasena(raw)
+                .contrasena(hashedPassword)
                 .documento_identidad(trim(dto.getDocumento_identidad()))
                 .telefono(trim(dto.getTelefono()))
                 .rolId(dto.getRolId())

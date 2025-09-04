@@ -66,7 +66,7 @@ public class UsuarioRepositoryAdapter implements UsuarioRepository {
                 .documento_identidad(e.getDocumentoIdentidad())
                 .telefono(e.getTelefono())
                 .rolId(e.getRolId())
-                .salario_base(e.getSalarioBase())
+                .salario_base((long) e.getSalarioBase())
                 .fecha_nacimiento(e.getFechaNacimiento()) // <-- agregado
                 .direccion(e.getDireccion())              // <-- agregado
                 .build();
@@ -82,7 +82,7 @@ public class UsuarioRepositoryAdapter implements UsuarioRepository {
                 .documentoIdentidad(u.getDocumento_identidad())
                 .telefono(u.getTelefono())
                 .rolId(u.getRolId())
-                .salarioBase(u.getSalario_base())
+                .salarioBase(Math.toIntExact(u.getSalario_base()))
                 .fechaNacimiento(u.getFecha_nacimiento()) // <-- agregado
                 .direccion(u.getDireccion())              // <-- agregado
                 .build();
