@@ -9,9 +9,7 @@ public interface RolReactiveRepository
         extends ReactiveCrudRepository<RolEntity, Long>,
         ReactiveQueryByExampleExecutor<RolEntity> {
 
-    // Usa el nombre de columna/campo real. Si en la entidad es "nombre":
-    Mono<RolEntity> findByNombre(String nombre);
+    Mono<RolEntity> findByName(String name);
 
-    // findById ya existe en ReactiveCrudRepository, pero puedes redeclararlo si quieres
     Mono<RolEntity> findById(Long id);
 }

@@ -11,7 +11,6 @@ import reactor.core.publisher.Mono;
 public class RolRepositoryAdapter implements RolRepository {
 
     private static final Logger log = LoggerFactory.getLogger(RolRepositoryAdapter.class);
-
     private final RolReactiveRepository repository;
 
     public RolRepositoryAdapter(RolReactiveRepository repository) {
@@ -20,7 +19,7 @@ public class RolRepositoryAdapter implements RolRepository {
 
     @Override
     public Mono<Rol> findByName(String name) {
-        return repository.findByNombre(name) // <- devuelve RolEntity
+        return repository.findByName(name)
                 .map(RolRepositoryAdapter::toDomain)
                 .doOnSuccess(r -> log.info("Rol encontrado por nombre: {}", name))
                 .doOnError(e -> log.error("Error buscando rol {}: {}", name, e.getMessage()));
@@ -34,7 +33,6 @@ public class RolRepositoryAdapter implements RolRepository {
                 .doOnError(e -> log.error("Error buscando rol id {}: {}", id, e.getMessage()));
     }
 
-    // -------------------- Mapper manual Entidad <-> Dominio --------------------
     private static Rol toDomain(RolEntity e) {
         return Rol.builder()
                 .id(e.getId())

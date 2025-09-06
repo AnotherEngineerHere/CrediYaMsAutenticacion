@@ -6,6 +6,7 @@ import co.com.crediya.autenticacion.api.dto.ErrorResponse;
 import co.com.crediya.autenticacion.api.mapper.UsuarioMapper;
 import co.com.crediya.autenticacion.model.excepciones.*;
 import co.com.crediya.autenticacion.usecase.usuario.UsuarioUseCase;
+import io.swagger.v3.oas.models.servers.Server;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -31,6 +32,9 @@ public class Handler {
 
     private final UsuarioUseCase usuarioUseCase;
 
+    public Mono<ServerResponse> login (ServerRequest request){
+        return ServerResponse.ok().build();
+    }
     /**
      * Maneja la creación de un nuevo usuario en el sistema.
      *
