@@ -55,3 +55,7 @@ springdoc:
   default-consumes-media-type: application/json
   default-produces-media-type: application/json
   show-actuator: false
+
+  jwt:
+  secret: ${JWT_SECRET}
+  expiration: ${JWT_EXPIRATION}
