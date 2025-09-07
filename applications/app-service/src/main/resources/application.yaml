@@ -56,6 +56,9 @@ springdoc:
   default-produces-media-type: application/json
   show-actuator: false
 
+app:
   jwt:
-  secret: ${JWT_SECRET}
-  expiration: ${JWT_EXPIRATION}
+    secret: "d1UqRjMSI9She0oFsvhG/PIV1A/NN1Ke9RTohM/vVfE55Kle3Defav4aNLH01O7ocomXcnwXAAKqur8bg7CHdA=="
+    issuer: "crediya-auth"
+    access-minutes: 30
+    refresh-days: 7

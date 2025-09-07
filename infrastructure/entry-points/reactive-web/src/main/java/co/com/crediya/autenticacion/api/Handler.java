@@ -1,15 +1,14 @@
 package co.com.crediya.autenticacion.api;
 
-import co.com.crediya.autenticacion.api.dto.CreateUserDTO;
-import co.com.crediya.autenticacion.api.dto.CreateUserResponse;
-import co.com.crediya.autenticacion.api.dto.ErrorResponse;
-import co.com.crediya.autenticacion.api.dto.LoginDTO;
+import co.com.crediya.autenticacion.api.dto.*;
 import co.com.crediya.autenticacion.api.exception.ContrasenaVaciaException;
 import co.com.crediya.autenticacion.api.exception.CredencialesInvalidasException;
 import co.com.crediya.autenticacion.api.exception.RolNoPermitidoException;
 import co.com.crediya.autenticacion.api.exception.UsuarioNoEncontradoException;
 import co.com.crediya.autenticacion.api.mapper.UsuarioMapper;
+import co.com.crediya.autenticacion.api.security.JwtService;
 import co.com.crediya.autenticacion.model.excepciones.*;
+import co.com.crediya.autenticacion.usecase.usuario.LoginUseCase;
 import co.com.crediya.autenticacion.usecase.usuario.UsuarioUseCase;
 import io.swagger.v3.oas.models.servers.Server;
 import lombok.RequiredArgsConstructor;
@@ -114,55 +113,4 @@ public class Handler {
                                 });
         }
 
-        public Mono<ServerResponse> login(ServerRequest request) {
-                return request.bodyToMono(LoginDTO.class)
-                                .switchIfEmpty(Mono.error(
-                                                new ContrasenaVaciaException("El cuerpo de la petición es requerido")))
-                                .flatMap(dto -> loginUseCase.execute(dto.getCorreo(), dto.getContrasena()))
-                                .flatMap(res -> jwtService.issue(res.email(), res.rol(), res.accesos())
-                                                .flatMap(tokens -> ServerResponse.ok()
-                                                                .contentType(MediaType.APPLICATION_JSON)
-                                                                .bodyValue(new LoginResponseDTO(
-                                                                                "Bearer",
-                                                                                tokens.accessToken(),
-                                                                                tokens.refreshToken(),
-                                                                                tokens.expiresIn(),
-                                                                                res.email(),
-                                                                                res.rol(),
-                                                                                String.join(" ", res.accesos())
-                                                                ))))
-                                // --------- Manejo de errores conocidos ----------
-                                .onErrorResume(EmailVacioException.class,
-                                                ex -> badRequest("EMAIL_VACIO", ex.getMessage()))
-                                .onErrorResume(EmailInvalidoException.class,
-                                                ex -> badRequest("EMAIL_INVALIDO", ex.getMessage()))
-                                .onErrorResume(ContrasenaVaciaException.class,
-                                                ex -> badRequest("CONTRASENA_VACIA", ex.getMessage()))
-                                .onErrorResume(UsuarioNoEncontradoException.class,
-                                                ex -> status(HttpStatus.NOT_FOUND, "USUARIO_NO_ENCONTRADO",
-                                                                ex.getMessage()))
-                                .onErrorResume(CredencialesInvalidasException.class,
-                                                ex -> status(HttpStatus.UNAUTHORIZED, "CREDENCIALES_INVALIDAS",
-                                                                ex.getMessage()))
-                                .onErrorResume(RoleNotFoundException.class,
-                                                ex -> status(HttpStatus.NOT_FOUND, "ROL_NO_ENCONTRADO",
-                                                                ex.getMessage()))
-                                .onErrorResume(RolNoPermitidoException.class,
-                                                ex -> status(HttpStatus.FORBIDDEN, "ROL_NO_PERMITIDO", ex.getMessage()))
-                                // Fallback genérico
-                                .onErrorResume(ex -> status(HttpStatus.INTERNAL_SERVER_ERROR, "ERROR_INTERNO",
-                                                "Ocurrió un error inesperado. Contacte con el administrador."));
-        }
-
-        private Mono<ServerResponse> badRequest(String code, String msg) {
-                return ServerResponse.badRequest()
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .bodyValue(ErrorResponse.of(code, msg));
-        }
-
-        private Mono<ServerResponse> status(HttpStatus status, String code, String msg) {
-                return ServerResponse.status(status)
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .bodyValue(ErrorResponse.of(code, msg));
-        }
 }

@@ -9,7 +9,7 @@ public interface RolReactiveRepository
         extends ReactiveCrudRepository<RolEntity, Long>,
         ReactiveQueryByExampleExecutor<RolEntity> {
 
-    Mono<RolEntity> findByName(String name);
+    Mono<RolEntity> findByNombre(String name);
 
     Mono<RolEntity> findById(Long id);
 }

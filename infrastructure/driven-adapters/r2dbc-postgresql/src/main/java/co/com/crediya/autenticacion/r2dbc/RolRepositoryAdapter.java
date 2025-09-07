@@ -1,6 +1,7 @@
 package co.com.crediya.autenticacion.r2dbc;
 
 import co.com.crediya.autenticacion.model.rol.Rol;
+import co.com.crediya.autenticacion.model.rol.gateways.RolRepository; // 👈 usa el puerto del dominio
 import co.com.crediya.autenticacion.r2dbc.entity.RolEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,11 +19,11 @@ public class RolRepositoryAdapter implements RolRepository {
     }
 
     @Override
-    public Mono<Rol> findByName(String name) {
-        return repository.findByName(name)
-                .map(RolRepositoryAdapter::toDomain)
-                .doOnSuccess(r -> log.info("Rol encontrado por nombre: {}", name))
-                .doOnError(e -> log.error("Error buscando rol {}: {}", name, e.getMessage()));
+    public Mono<Rol> findByNombre(String nombre) {
+        return repository.findByNombre(nombre)              // <- devuelve RolEntity
+                .map(RolRepositoryAdapter::toDomain)    // <- mapeo a dominio
+                .doOnSuccess(r -> log.info("Rol encontrado por nombre: {}", nombre))
+                .doOnError(e -> log.error("Error buscando rol {}: {}", nombre, e.getMessage()));
     }
 
     @Override
@@ -34,18 +35,11 @@ public class RolRepositoryAdapter implements RolRepository {
     }
 
     private static Rol toDomain(RolEntity e) {
+        if (e == null) return null;
         return Rol.builder()
                 .id(e.getId())
-                .name(e.getName())
-                .description(e.getDescription())
-                .build();
-    }
-
-    private static RolEntity toEntity(Rol r) {
-        return RolEntity.builder()
-                .id(r.getId())
-                .name(r.getName())
-                .description(r.getDescription())
+                .nombre(e.getNombre())
+                .descripcion(e.getDescripcion())
                 .build();
     }
 }

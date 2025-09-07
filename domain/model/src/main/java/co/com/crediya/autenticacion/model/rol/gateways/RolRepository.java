@@ -5,8 +5,8 @@ import reactor.core.publisher.Mono;
 
 public interface RolRepository {
 
-    Mono<Rol> findByName(String name);
-
     Mono<Rol> findById(Long id);
+
+    Mono<Rol> findByNombre(String name);
 
 }

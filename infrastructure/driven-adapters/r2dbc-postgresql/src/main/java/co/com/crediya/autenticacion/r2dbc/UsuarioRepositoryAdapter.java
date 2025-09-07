@@ -36,7 +36,18 @@ public class UsuarioRepositoryAdapter implements UsuarioRepository {
                 .doOnSuccess(u -> log.info("Usuario guardado en DB: {}", u.getEmail()))
                 .doOnError(e -> log.error("Error al guardar usuario {}: {}", usuario.getEmail(), e.getMessage()));
     }
-
+    @Override
+    public Mono<Usuario> getByEmail(String email) {
+        if (email == null || email.isBlank()) {
+            return Mono.error(new EmailVacioException("El email no puede ser nulo o vacío"));
+        }
+        if (!EMAIL_RX.matcher(email).matches()) {
+            return Mono.error(new EmailInvalidoException("Formato de email inválido"));
+        }
+        return repository.findByEmail(email)
+                .map(UsuarioRepositoryAdapter::toDomain)
+                .doOnNext(u -> log.debug("Usuario cargado por email: {}", email));
+    }
     @Override
     public Mono<Boolean> findByEmail(String email) {
         if (email == null || email.isBlank()) {

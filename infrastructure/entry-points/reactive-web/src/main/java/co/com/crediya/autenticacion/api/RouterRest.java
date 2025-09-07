@@ -50,8 +50,8 @@ public class RouterRest {
                     )
             )
     })
-    public RouterFunction<ServerResponse> routerFunction(Handler handler) {
+    public RouterFunction<ServerResponse> routerFunction(Handler handler, AuthHandler authHandler) {
         return route(POST("/api/v1/usuarios"), handler::saveUser)
-                .andRoute(POST("/api/v1/usuarios/login"), handler::login);
+                .andRoute(POST("/api/v1/usuarios/login"), authHandler::login);
     }
 }

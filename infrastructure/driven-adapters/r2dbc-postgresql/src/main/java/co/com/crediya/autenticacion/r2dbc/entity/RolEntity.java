@@ -11,16 +11,16 @@ import org.springframework.data.relational.core.mapping.Column;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Table("Rol")
+@Table(name = "rol", schema = "auth")
 public class RolEntity {
 
     @Id
-    @Column("id")
+    @Column("id_rol")
     private Long id;
 
-    @Column("name")
-    private String name;
+    @Column("nombre")
+    private String nombre;
 
-    @Column("description")
-    private String description;
+    @Column("descripcion")
+    private String descripcion;
 }
