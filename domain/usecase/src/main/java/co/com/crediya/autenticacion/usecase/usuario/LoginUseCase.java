@@ -42,7 +42,7 @@ public class LoginUseCase {
             return Mono.error(new ContrasenaVaciaException("La contraseña es obligatoria"));
         }
 
-        return usuarioRepository.findByEmail(email)
+        return usuarioRepository.getByEmail(email)
                 .switchIfEmpty(Mono.error(new UsuarioNoEncontradoException("No existe un usuario con el email proporcionado")))
                 .flatMap(u -> passwordService.matches(contrasena, u.getContrasena())
                         .flatMap(ok -> ok
