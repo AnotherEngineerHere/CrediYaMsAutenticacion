@@ -15,6 +15,7 @@ import org.springframework.http.MediaType;
 import org.springframework.web.reactive.function.server.RouterFunction;
 import org.springframework.web.reactive.function.server.ServerResponse;
 
+import static org.springframework.web.reactive.function.server.RequestPredicates.GET;
 import static org.springframework.web.reactive.function.server.RequestPredicates.POST;
 import static org.springframework.web.reactive.function.server.RouterFunctions.route;
 
@@ -23,6 +24,26 @@ public class RouterRest {
 
     @Bean
     @RouterOperations({
+            @RouterOperation(
+                    path = "/api/v1/usuarios/documento/{documento}",
+                    produces = MediaType.APPLICATION_JSON_VALUE,
+                    beanClass = Handler.class,
+                    beanMethod = "findUserByDocumento",
+                    operation = @Operation(
+                            operationId = "findUserByDocumento",
+                            summary = "Buscar usuario por documento",
+                            description = "Busca un usuario por su número de documento",
+                            tags = {"Usuarios"},
+                            responses = {
+                                    @ApiResponse(
+                                            responseCode = "200",
+                                            description = "Usuario encontrado",
+                                            content = @Content(schema = @Schema(implementation = CreateUserResponse.class))
+                                    ),
+                                    @ApiResponse(responseCode = "404", description = "Usuario no encontrado")
+                            }
+                    )
+            ),
             @RouterOperation(
                     path = "/api/v1/usuarios",
                     produces = MediaType.APPLICATION_JSON_VALUE,
@@ -52,6 +73,7 @@ public class RouterRest {
     })
     public RouterFunction<ServerResponse> routerFunction(Handler handler, AuthHandler authHandler) {
         return route(POST("/api/v1/usuarios"), handler::saveUser)
-                .andRoute(POST("/api/v1/usuarios/login"), authHandler::login);
+                .andRoute(POST("/api/v1/usuarios/login"), authHandler::login)
+                .andRoute(GET("/api/v1/usuarios/documento/{documento}"), handler::findUserByDocumento);
     }
 }

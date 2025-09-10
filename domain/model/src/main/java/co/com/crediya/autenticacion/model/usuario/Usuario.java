@@ -57,6 +57,7 @@ public class Usuario {
     private void validarInvariantes() {
         validarNombre(this.nombre);
         validarApellido(this.apellido);
+        validarDocumentoIdentidad(this.documento_identidad);
 
         if (email == null || email.isEmpty()) {
             throw new EmailVacioException("El email no puede estar vacío");
@@ -118,6 +119,19 @@ public class Usuario {
         int len = apellido.length();
         if (len < 2 || len > 50) {
             throw new ApellidoLongitudInvalidaException("El apellido debe tener entre 2 y 50 caracteres");
+        }
+    }
+
+    private static void validarDocumentoIdentidad(String documento) {
+        if (documento == null || documento.isEmpty()) {
+            throw new DocumentoIdentidadInvalidoException("El documento de identidad no puede estar vacío");
+        }
+        int len = documento.length();
+        if (len < 5 || len > 20) {
+            throw new DocumentoIdentidadInvalidoException("El documento de identidad debe tener entre 5 y 20 caracteres");
+        }
+        if (!documento.matches("\\d+")) {
+            throw new DocumentoIdentidadInvalidoException("El documento de identidad solo puede contener números");
         }
     }
 

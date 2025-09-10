@@ -81,9 +81,11 @@ public class SecurityConfig {
                         .pathMatchers("/api/v1/usuarios/login").permitAll()
                         .pathMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         // Solo usuarios con ROLE_ADMIN pueden acceder a /api/v1/usuarios/**
+                        .pathMatchers(HttpMethod.POST, "/api/v1/usuarios").permitAll()
+                        .pathMatchers("/api/v1/usuarios/documento/{documento}").authenticated()
                         .pathMatchers("/api/v1/usuarios/**").hasRole("ADMIN")
                         // lo demás, a tu gusto:
-                        .anyExchange().permitAll()
+                        .anyExchange().authenticated()
                 )
                 .oauth2ResourceServer(oauth2 -> oauth2
                         .jwt(jwt -> jwt

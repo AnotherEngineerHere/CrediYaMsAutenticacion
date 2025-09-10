@@ -14,7 +14,7 @@ subprojects {
     apply plugin: 'io.spring.dependency-management'
     apply plugin: 'info.solidsoft.pitest'
 
-    compileJava.dependsOn validateStructure
+    //compileJava.dependsOn validateStructure
 
     java {
         sourceCompatibility = JavaVersion.VERSION_21

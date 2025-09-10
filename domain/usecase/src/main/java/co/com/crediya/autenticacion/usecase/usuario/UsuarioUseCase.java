@@ -107,4 +107,11 @@ public class UsuarioUseCase {
                 .doOnError(e -> System.out.println("Error al verificar email "
                         + safeEmail + " -> " + e.getMessage()));
     }
+
+    public Mono<Usuario> findByDocumentoIdentidad(String documentoIdentidad) {
+        if (documentoIdentidad == null || documentoIdentidad.isBlank()) {
+            return Mono.error(new IllegalArgumentException("El documento de identidad no puede ser nulo o vacío"));
+        }
+        return usuarioRepository.findByDocumentoIdentidad(documentoIdentidad);
+    }
 }

@@ -66,6 +66,13 @@ public class UsuarioRepositoryAdapter implements UsuarioRepository {
                 .doOnNext(exists -> log.debug("documentoIdentidad({}) -> {}", documentoIdentidad, exists));
     }
 
+    @Override
+    public Mono<Usuario> findByDocumentoIdentidad(String documentoIdentidad) {
+        return repository.findByDocumentoIdentidad(documentoIdentidad)
+                .map(UsuarioRepositoryAdapter::toDomain)
+                .doOnNext(u -> log.debug("Usuario cargado por documento: {}", documentoIdentidad));
+    }
+
     // -------------------- Mapper manual Entidad <-> Dominio --------------------
     private static Usuario toDomain(UsuarioEntity e) {
         // Usa el builder del dominio (valida invariantes)

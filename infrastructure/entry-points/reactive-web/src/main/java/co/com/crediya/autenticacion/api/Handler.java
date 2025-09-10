@@ -113,4 +113,13 @@ public class Handler {
                                 });
         }
 
+        public Mono<ServerResponse> findUserByDocumento(ServerRequest request) {
+                String documento = request.pathVariable("documento");
+                return usuarioUseCase.findByDocumentoIdentidad(documento)
+                                .flatMap(usuario -> ServerResponse.ok()
+                                                .contentType(MediaType.APPLICATION_JSON)
+                                                .bodyValue(CreateUserResponse.from(usuario)))
+                                .switchIfEmpty(ServerResponse.notFound().build());
+        }
+
 }
