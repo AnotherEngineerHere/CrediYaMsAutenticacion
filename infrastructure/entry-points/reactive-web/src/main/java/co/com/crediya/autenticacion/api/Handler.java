@@ -53,57 +53,79 @@ public class Handler {
      *         creado.
      */
     public Mono<ServerResponse> saveUser(ServerRequest request) {
-        log.info("Received user registration request from IP: {}", request.getRemoteAddress());
-        
-        return request.bodyToMono(CreateUserDTO.class)
-                        .doOnNext(dto -> log.debug("User registration payload: {}", dto))
-                        .map(UsuarioMapper::toDomain)
-                        .doOnNext(u -> log.debug("Mapped to domain user: {}", u.getEmail()))
-                        .flatMap(usuarioUseCase::save)
-                        .doOnSuccess(saved -> log.info("User registered successfully: {}", saved.getEmail()))
-                        .flatMap(saved -> {
-                                URI location = URI.create("/api/v1/usuarios/" + saved.getEmail());
-                                log.debug("User location header: {}", location);
-                                return ServerResponse.created(location)
-                                                .contentType(MediaType.APPLICATION_JSON)
-                                                .bodyValue(CreateUserResponse.from(saved));
-                        })
-                        .onErrorResume(NombreVacioException.class, ex -> handleException(ex, "NOMBRE_VACIO", log))
-                        .onErrorResume(NombreLongitudInvalidaException.class, ex -> handleException(ex, "NOMBRE_LONGITUD_INVALIDA", log))
-                        .onErrorResume(ApellidoVacioException.class, ex -> handleException(ex, "APELLIDO_VACIO", log))
-                        .onErrorResume(ApellidoLongitudInvalidaException.class, ex -> handleException(ex, "APELLIDO_LONGITUD_INVALIDA", log))
-                        .onErrorResume(EmailVacioException.class, ex -> handleException(ex, "EMAIL_VACIO", log))
-                        .onErrorResume(EmailDuplicadoException.class, ex -> handleException(ex, "EMAIL_DUPLICADO", HttpStatus.CONFLICT, log))
-                        .onErrorResume(EmailInvalidoException.class, ex -> handleException(ex, "EMAIL_INVALIDO", log))
-                        .onErrorResume(DocumentoDuplicadoException.class, ex -> handleException(ex, "DOCUMENTO_DUPLICADO", HttpStatus.CONFLICT, log))
-                        .onErrorResume(SalarioBaseException.class, ex -> handleException(ex, "SALARIO_BASE_INVALIDO", log))
-                        .onErrorResume(PhoneNotvalidException.class, ex -> handleException(ex, "TELEFONO_INVALIDO", log))
-                        .onErrorResume(RoleNotEmptyException.class, ex -> handleException(ex, "ROL_OBLIGATORIO", log))
-                        .onErrorResume(UsuarioMenorEdadException.class, ex -> handleException(ex, "USUARIO_MENOR_EDAD", HttpStatus.CONFLICT, log))
-                        // --- Fallback genérico (500) ---
-                        .onErrorResume(ex -> handleGenericException(ex, log));
+
+            
+            return request.bodyToMono(CreateUserDTO.class)
+                            .doOnNext(dto -> log.debug("User registration payload: {}", dto))
+                            .map(UsuarioMapper::toDomain)
+                            .doOnNext(u -> log.debug("Mapped to domain user: {}", u.getEmail()))
+                            .flatMap(usuarioUseCase::save)
+                            .doOnSuccess(saved -> log.info("User registered successfully: {}", saved.getEmail()))
+                            .flatMap(saved -> {
+                                    URI location = URI.create("/api/v1/usuarios/" + saved.getEmail());
+                                    log.debug("User location header: {}", location);
+                                    return ServerResponse.created(location)
+                                                    .contentType(MediaType.APPLICATION_JSON)
+                                                    .bodyValue(CreateUserResponse.from(saved));
+                            })
+                            .onErrorResume(NombreVacioException.class, ex -> handleException(ex, "NOMBRE_VACIO", log))
+                            .onErrorResume(NombreLongitudInvalidaException.class, ex -> handleException(ex, "NOMBRE_LONGITUD_INVALIDA", log))
+                            .onErrorResume(ApellidoVacioException.class, ex -> handleException(ex, "APELLIDO_VACIO", log))
+                            .onErrorResume(ApellidoLongitudInvalidaException.class, ex -> handleException(ex, "APELLIDO_LONGITUD_INVALIDA", log))
+                            .onErrorResume(EmailVacioException.class, ex -> handleException(ex, "EMAIL_VACIO", log))
+                            .onErrorResume(EmailDuplicadoException.class, ex -> handleException(ex, "EMAIL_DUPLICADO", HttpStatus.CONFLICT, log))
+                            .onErrorResume(EmailInvalidoException.class, ex -> handleException(ex, "EMAIL_INVALIDO", log))
+                            .onErrorResume(DocumentoDuplicadoException.class, ex -> handleException(ex, "DOCUMENTO_DUPLICADO", HttpStatus.CONFLICT, log))
+                            .onErrorResume(SalarioBaseException.class, ex -> handleException(ex, "SALARIO_BASE_INVALIDO", log))
+                            .onErrorResume(PhoneNotvalidException.class, ex -> handleException(ex, "TELEFONO_INVALIDO", log))
+                            .onErrorResume(RoleNotEmptyException.class, ex -> handleException(ex, "ROL_OBLIGATORIO", log))
+                            .onErrorResume(UsuarioMenorEdadException.class, ex -> handleException(ex, "USUARIO_MENOR_EDAD", HttpStatus.CONFLICT, log))
+                            // --- Fallback genérico (500) ---
+                            .onErrorResume(ex -> handleGenericException(ex, log));
+    }
+
+    /**
+     * Obtiene un usuario por su correo electrónico.
+     *
+     * @param request solicitud con el email en la ruta.
+     * @return {@link ServerResponse} con datos del usuario o error si no se encuentra.
+     */
+    public Mono<ServerResponse> getUserByEmail(ServerRequest request) {
+            String email = request.pathVariable("email");
+            log.info("Request to retrieve user by email: {}", email);
+            
+            return usuarioUseCase.getByEmail(email)
+                    .map(user -> UserDataDTO.from(user)) // Asumiendo mapper existe o se crea
+                    .flatMap(userData -> ServerResponse.ok()
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .bodyValue(userData))
+                    .doOnSuccess(user -> log.info("User retrieved successfully: {}", email))
+                    .onErrorResume(EmailVacioException.class, ex -> handleException(ex, "EMAIL_VACIO", log))
+                    .onErrorResume(EmailInvalidoException.class, ex -> handleException(ex, "EMAIL_INVALIDO", log))
+                    .onErrorResume(UsuarioNoEncontradoException.class, ex -> handleException(ex, "USUARIO_NO_ENCONTRADO", HttpStatus.NOT_FOUND, log))
+                    .onErrorResume(ex -> handleGenericException(ex, log));
     }
 
     private Mono<ServerResponse> handleException(Exception ex, String code, Logger log) {
-        log.warn("Bad Request - {}: {}", code, ex.getMessage());
-        return ServerResponse.badRequest()
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .bodyValue(ErrorResponse.of(code, ex.getMessage()));
+            log.warn("Bad Request - {}: {}", code, ex.getMessage());
+            return ServerResponse.badRequest()
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .bodyValue(ErrorResponse.of(code, ex.getMessage()));
     }
 
     private Mono<ServerResponse> handleException(Exception ex, String code, HttpStatus status, Logger log) {
-        log.warn("{} - {}: {}", status, code, ex.getMessage());
-        return ServerResponse.status(status)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .bodyValue(ErrorResponse.of(code, ex.getMessage()));
+            log.warn("{} - {}: {}", status, code, ex.getMessage());
+            return ServerResponse.status(status)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .bodyValue(ErrorResponse.of(code, ex.getMessage()));
     }
 
     private Mono<ServerResponse> handleGenericException(Throwable ex, Logger log) {
-        log.error("Unexpected error during user registration", ex);
-        return ServerResponse.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .bodyValue(ErrorResponse.of("ERROR_INTERNO",
-                                        "Ocurrió un error inesperado. Contacte con el administrador."));
+            log.error("Unexpected error during user operation", ex);
+            return ServerResponse.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .bodyValue(ErrorResponse.of("ERROR_INTERNO",
+                                            "Ocurrió un error inesperado. Contacte con el administrador."));
     }
 
 }

@@ -3,8 +3,10 @@ package co.com.crediya.autenticacion.usecase.usuario;
 import co.com.crediya.autenticacion.model.excepciones.DocumentoDuplicadoException;
 import co.com.crediya.autenticacion.model.excepciones.EmailDuplicadoException;
 import co.com.crediya.autenticacion.model.excepciones.EmailInvalidoException;
+import co.com.crediya.autenticacion.model.excepciones.EmailVacioException;
 import co.com.crediya.autenticacion.model.usuario.Usuario;
 import co.com.crediya.autenticacion.model.usuario.gateways.UsuarioRepository;
+import co.com.crediya.autenticacion.usecase.excepciones.UsuarioNoEncontradoException;
 import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Mono;
 
@@ -106,5 +108,24 @@ public class UsuarioUseCase {
                 })
                 .doOnError(e -> System.out.println("Error al verificar email "
                         + safeEmail + " -> " + e.getMessage()));
+    }
+
+    /**
+     * Obtiene un usuario por su correo electrónico.
+     *
+     * @param email correo electrónico del usuario a buscar.
+     * @return un {@link Mono} que emite el {@link Usuario} si existe, o error si el email es inválido.
+     */
+    public Mono<Usuario> getByEmail(String email) {
+        if (email == null || email.isBlank()) {
+            return Mono.error(new EmailVacioException("El email no puede ser nulo o vacío"));
+        }
+        if (!email.matches("^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$")) {
+            return Mono.error(new EmailInvalidoException("El email no tiene un formato válido"));
+        }
+        return usuarioRepository.getByEmail(email)
+                .switchIfEmpty(Mono.error(new UsuarioNoEncontradoException("Usuario no encontrado con email: " + email)))
+                .doOnSuccess(u -> System.out.println("Usuario encontrado: " + u.getEmail()))
+                .doOnError(e -> System.out.println("Error al buscar usuario por email " + email + ": " + e.getMessage()));
     }
 }

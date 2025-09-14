@@ -32,7 +32,7 @@ public class AuthHandler {
 
     // POST /api/v1/usuarios/login
     public Mono<ServerResponse> login(ServerRequest request) {
-        log.info("Received login request from IP: {}", request.getRemoteAddress());
+
         
         return request.bodyToMono(LoginDTO.class)
                 .doOnNext(dto -> log.debug("Login attempt for email: {}", dto.getCorreoElectronico()))
@@ -59,10 +59,12 @@ public class AuthHandler {
                                     scope                    // scope
                             ));
                 })
-                .flatMap(body -> ServerResponse.ok()
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .bodyValue(body))
-                .doOnSuccess(response -> log.info("Login successful for user: {}", ((LoginResponseDTO) response.body()).subject()))
+                .flatMap(body -> {
+                    log.info("Login successful for user: {}", ((LoginResponseDTO) body).subject());
+                    return ServerResponse.ok()
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .bodyValue(body);
+                })
 
                 // --------- Manejo de errores conocidos ----------
                 .onErrorResume(EmailVacioException.class,

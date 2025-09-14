@@ -1,10 +1,8 @@
 package co.com.crediya.autenticacion.api;
 
-import co.com.crediya.autenticacion.api.dto.CreateUserDTO;
-import co.com.crediya.autenticacion.api.dto.CreateUserResponse;
-import co.com.crediya.autenticacion.api.dto.LoginDTO;
-import co.com.crediya.autenticacion.api.dto.LoginResponseDTO;
+import co.com.crediya.autenticacion.api.dto.*;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
@@ -17,6 +15,7 @@ import org.springframework.http.MediaType;
 import org.springframework.web.reactive.function.server.RouterFunction;
 import org.springframework.web.reactive.function.server.ServerResponse;
 
+import static org.springframework.web.reactive.function.server.RequestPredicates.GET;
 import static org.springframework.web.reactive.function.server.RequestPredicates.POST;
 import static org.springframework.web.reactive.function.server.RouterFunctions.route;
 
@@ -78,10 +77,35 @@ public class RouterRest {
                                     @ApiResponse(responseCode = "403", description = "Rol no permitido")
                             }
                     )
+            ),
+            @RouterOperation(
+                    path = "/api/v1/usuarios/{email}",
+                    produces = MediaType.APPLICATION_JSON_VALUE,
+                    beanClass = Handler.class,
+                    beanMethod = "getUserByEmail",
+                    operation = @Operation(
+                            operationId = "getUserByEmail",
+                            summary = "Obtener usuario por email",
+                            description = "Recupera los datos de un usuario por su correo electrónico",
+                            tags = {"Usuarios"},
+                            parameters = {
+                                    @Parameter(name = "email", description = "Correo electrónico del usuario", required = true)
+                            },
+                            responses = {
+                                    @ApiResponse(
+                                            responseCode = "200",
+                                            description = "Usuario encontrado",
+                                            content = @Content(schema = @Schema(implementation = UserDataDTO.class))
+                                    ),
+                                    @ApiResponse(responseCode = "400", description = "Email inválido"),
+                                    @ApiResponse(responseCode = "404", description = "Usuario no encontrado")
+                            }
+                    )
             )
     })
     public RouterFunction<ServerResponse> routerFunction(Handler handler, AuthHandler authHandler) {
         return route(POST("/api/v1/usuarios"), handler::saveUser)
-                .andRoute(POST("/api/v1/usuarios/login"), authHandler::login);
+                .andRoute(POST("/api/v1/usuarios/login"), authHandler::login)
+                .andRoute(GET("/api/v1/usuarios/{email}"), handler::getUserByEmail);
     }
 }
