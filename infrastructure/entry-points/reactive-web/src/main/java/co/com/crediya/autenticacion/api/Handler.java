@@ -12,6 +12,8 @@ import co.com.crediya.autenticacion.usecase.usuario.LoginUseCase;
 import co.com.crediya.autenticacion.usecase.usuario.UsuarioUseCase;
 import io.swagger.v3.oas.models.servers.Server;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
@@ -37,80 +39,71 @@ import javax.management.relation.RoleNotFoundException;
 @RequiredArgsConstructor
 public class Handler {
 
-        private final UsuarioUseCase usuarioUseCase;
-        private final LoginUseCase loginUseCase;
-        private final JwtService jwtService;
+    private static final Logger log = LoggerFactory.getLogger(Handler.class);
 
-        /**
-         * Maneja la creación de un nuevo usuario en el sistema.
-         *
-         * @param request cuerpo de la petición con datos del usuario.
-         * @return {@link ServerResponse} con estado 201 Created y datos del usuario
-         *         creado.
-         */
-        public Mono<ServerResponse> saveUser(ServerRequest request) {
-                System.out.println("Solicitud para crear un nuevo usuario recibida");
+    private final UsuarioUseCase usuarioUseCase;
+    private final LoginUseCase loginUseCase;
+    private final JwtService jwtService;
 
-                return request.bodyToMono(CreateUserDTO.class)
-                                .doOnNext(dto -> System.out.println("Payload recibido: " + dto))
-                                .map(UsuarioMapper::toDomain)
-                                .doOnNext(u -> System.out.println("Usuario mapeado al dominio: " + u.getEmail()))
-                                .flatMap(usuarioUseCase::save)
-                                .doOnSuccess(saved -> System.out.println(
-                                                "Usuario guardado exitosamente con email: " + saved.getEmail()))
-                                .flatMap(saved -> {
-                                        URI location = URI.create("/api/v1/usuarios" + saved.getEmail());
-                                        return ServerResponse.created(location)
-                                                        .contentType(MediaType.APPLICATION_JSON)
-                                                        .bodyValue(CreateUserResponse.from(saved));
-                                })
-                                .onErrorResume(NombreVacioException.class, ex -> ServerResponse.badRequest()
+    /**
+     * Maneja la creación de un nuevo usuario en el sistema.
+     *
+     * @param request cuerpo de la petición con datos del usuario.
+     * @return {@link ServerResponse} con estado 201 Created y datos del usuario
+     *         creado.
+     */
+    public Mono<ServerResponse> saveUser(ServerRequest request) {
+        log.info("Received user registration request from IP: {}", request.getRemoteAddress());
+        
+        return request.bodyToMono(CreateUserDTO.class)
+                        .doOnNext(dto -> log.debug("User registration payload: {}", dto))
+                        .map(UsuarioMapper::toDomain)
+                        .doOnNext(u -> log.debug("Mapped to domain user: {}", u.getEmail()))
+                        .flatMap(usuarioUseCase::save)
+                        .doOnSuccess(saved -> log.info("User registered successfully: {}", saved.getEmail()))
+                        .flatMap(saved -> {
+                                URI location = URI.create("/api/v1/usuarios/" + saved.getEmail());
+                                log.debug("User location header: {}", location);
+                                return ServerResponse.created(location)
                                                 .contentType(MediaType.APPLICATION_JSON)
-                                                .bodyValue(ErrorResponse.of("NOMBRE_VACIO", ex.getMessage())))
-                                .onErrorResume(NombreLongitudInvalidaException.class, ex -> ServerResponse.badRequest()
-                                                .contentType(MediaType.APPLICATION_JSON)
-                                                .bodyValue(ErrorResponse.of("NOMBRE_LONGITUD_INVALIDA",
-                                                                ex.getMessage())))
-                                .onErrorResume(ApellidoVacioException.class, ex -> ServerResponse.badRequest()
-                                                .contentType(MediaType.APPLICATION_JSON)
-                                                .bodyValue(ErrorResponse.of("APELLIDO_VACIO", ex.getMessage())))
-                                .onErrorResume(ApellidoLongitudInvalidaException.class, ex -> ServerResponse
-                                                .badRequest()
-                                                .contentType(MediaType.APPLICATION_JSON)
-                                                .bodyValue(ErrorResponse.of("APELLIDO_LONGITUD_INVALIDA",
-                                                                ex.getMessage())))
-                                .onErrorResume(EmailVacioException.class, ex -> ServerResponse.badRequest()
-                                                .contentType(MediaType.APPLICATION_JSON)
-                                                .bodyValue(ErrorResponse.of("EMAIL_VACIO", ex.getMessage())))
-                                .onErrorResume(EmailDuplicadoException.class, ex -> ServerResponse.status(409)
-                                                .contentType(MediaType.APPLICATION_JSON)
-                                                .bodyValue(ErrorResponse.of("EMAIL_DUPLICADO", ex.getMessage())))
-                                .onErrorResume(EmailInvalidoException.class, ex -> ServerResponse.badRequest()
-                                                .contentType(MediaType.APPLICATION_JSON)
-                                                .bodyValue(ErrorResponse.of("EMAIL_INVALIDO", ex.getMessage())))
-                                .onErrorResume(DocumentoDuplicadoException.class, ex -> ServerResponse.status(409)
-                                                .contentType(MediaType.APPLICATION_JSON)
-                                                .bodyValue(ErrorResponse.of("DOCUMENTO_DUPLICADO", ex.getMessage())))
-                                .onErrorResume(SalarioBaseException.class, ex -> ServerResponse.badRequest()
-                                                .contentType(MediaType.APPLICATION_JSON)
-                                                .bodyValue(ErrorResponse.of("SALARIO_BASE_INVALIDO", ex.getMessage())))
-                                .onErrorResume(PhoneNotvalidException.class, ex -> ServerResponse.badRequest()
-                                                .contentType(MediaType.APPLICATION_JSON)
-                                                .bodyValue(ErrorResponse.of("TELEFONO_INVALIDO", ex.getMessage())))
-                                .onErrorResume(RoleNotEmptyException.class, ex -> ServerResponse.badRequest()
-                                                .contentType(MediaType.APPLICATION_JSON)
-                                                .bodyValue(ErrorResponse.of("ROL_OBLIGATORIO", ex.getMessage())))
-                                .onErrorResume(UsuarioMenorEdadException.class, ex -> ServerResponse.status(409)
-                                                .contentType(MediaType.APPLICATION_JSON)
-                                                .bodyValue(ErrorResponse.of("USUARIO_MENOR_EDAD", ex.getMessage())))
-                                // --- Fallback genérico (500) ---
-                                .onErrorResume(ex -> {
-                                        System.out.println("Error al guardar usuario: " + ex.getMessage());
-                                        return ServerResponse.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                                                        .contentType(MediaType.APPLICATION_JSON)
-                                                        .bodyValue(ErrorResponse.of("ERROR_INTERNO",
-                                                                        "Ocurrió un error inesperado. Contacte con el administrador."));
-                                });
-        }
+                                                .bodyValue(CreateUserResponse.from(saved));
+                        })
+                        .onErrorResume(NombreVacioException.class, ex -> handleException(ex, "NOMBRE_VACIO", log))
+                        .onErrorResume(NombreLongitudInvalidaException.class, ex -> handleException(ex, "NOMBRE_LONGITUD_INVALIDA", log))
+                        .onErrorResume(ApellidoVacioException.class, ex -> handleException(ex, "APELLIDO_VACIO", log))
+                        .onErrorResume(ApellidoLongitudInvalidaException.class, ex -> handleException(ex, "APELLIDO_LONGITUD_INVALIDA", log))
+                        .onErrorResume(EmailVacioException.class, ex -> handleException(ex, "EMAIL_VACIO", log))
+                        .onErrorResume(EmailDuplicadoException.class, ex -> handleException(ex, "EMAIL_DUPLICADO", HttpStatus.CONFLICT, log))
+                        .onErrorResume(EmailInvalidoException.class, ex -> handleException(ex, "EMAIL_INVALIDO", log))
+                        .onErrorResume(DocumentoDuplicadoException.class, ex -> handleException(ex, "DOCUMENTO_DUPLICADO", HttpStatus.CONFLICT, log))
+                        .onErrorResume(SalarioBaseException.class, ex -> handleException(ex, "SALARIO_BASE_INVALIDO", log))
+                        .onErrorResume(PhoneNotvalidException.class, ex -> handleException(ex, "TELEFONO_INVALIDO", log))
+                        .onErrorResume(RoleNotEmptyException.class, ex -> handleException(ex, "ROL_OBLIGATORIO", log))
+                        .onErrorResume(UsuarioMenorEdadException.class, ex -> handleException(ex, "USUARIO_MENOR_EDAD", HttpStatus.CONFLICT, log))
+                        // --- Fallback genérico (500) ---
+                        .onErrorResume(ex -> handleGenericException(ex, log));
+    }
+
+    private Mono<ServerResponse> handleException(Exception ex, String code, Logger log) {
+        log.warn("Bad Request - {}: {}", code, ex.getMessage());
+        return ServerResponse.badRequest()
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .bodyValue(ErrorResponse.of(code, ex.getMessage()));
+    }
+
+    private Mono<ServerResponse> handleException(Exception ex, String code, HttpStatus status, Logger log) {
+        log.warn("{} - {}: {}", status, code, ex.getMessage());
+        return ServerResponse.status(status)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .bodyValue(ErrorResponse.of(code, ex.getMessage()));
+    }
+
+    private Mono<ServerResponse> handleGenericException(Throwable ex, Logger log) {
+        log.error("Unexpected error during user registration", ex);
+        return ServerResponse.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .bodyValue(ErrorResponse.of("ERROR_INTERNO",
+                                        "Ocurrió un error inesperado. Contacte con el administrador."));
+    }
 
 }

@@ -80,8 +80,13 @@ public class SecurityConfig {
                 .authorizeExchange(ex -> ex
                         .pathMatchers("/api/v1/usuarios/login").permitAll()
                         .pathMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        // Solo usuarios con ROLE_ADMIN pueden acceder a /api/v1/usuarios/**
-                        .pathMatchers("/api/v1/usuarios/**").hasRole("ADMIN")
+                        // User registration only for ADMIN or ASESOR roles
+                        .pathMatchers(HttpMethod.POST, "/api/v1/usuarios").hasAnyRole("ADMIN", "ASESOR")
+                        // User queries for authenticated users
+                        .pathMatchers(HttpMethod.GET, "/api/v1/usuarios/**").authenticated()
+                        // Other user operations for ADMIN only
+                        .pathMatchers(HttpMethod.PUT, "/api/v1/usuarios/**").hasRole("ADMIN")
+                        .pathMatchers(HttpMethod.DELETE, "/api/v1/usuarios/**").hasRole("ADMIN")
                         // lo demás, a tu gusto:
                         .anyExchange().permitAll()
                 )
