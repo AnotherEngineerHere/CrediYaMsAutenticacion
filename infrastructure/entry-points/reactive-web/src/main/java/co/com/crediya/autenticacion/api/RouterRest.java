@@ -2,6 +2,8 @@ package co.com.crediya.autenticacion.api;
 
 import co.com.crediya.autenticacion.api.dto.CreateUserDTO;
 import co.com.crediya.autenticacion.api.dto.CreateUserResponse;
+import co.com.crediya.autenticacion.api.dto.LoginDTO;
+import co.com.crediya.autenticacion.api.dto.LoginResponseDTO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -46,6 +48,34 @@ public class RouterRest {
                                     ),
                                     @ApiResponse(responseCode = "400", description = "Solicitud inválida"),
                                     @ApiResponse(responseCode = "409", description = "Usuario ya existe")
+                            }
+                    )
+            ),
+            @RouterOperation(
+                    path = "/api/v1/usuarios/login",
+                    produces = MediaType.APPLICATION_JSON_VALUE,
+                    consumes = MediaType.APPLICATION_JSON_VALUE,
+                    beanClass = AuthHandler.class,
+                    beanMethod = "login",
+                    operation = @Operation(
+                            operationId = "loginUser",
+                            summary = "Iniciar sesión",
+                            description = "Autentica un usuario y devuelve tokens de acceso",
+                            tags = {"Autenticación"},
+                            requestBody = @RequestBody(
+                                    required = true,
+                                    content = @Content(schema = @Schema(implementation = LoginDTO.class))
+                            ),
+                            responses = {
+                                    @ApiResponse(
+                                            responseCode = "200",
+                                            description = "Login exitoso",
+                                            content = @Content(schema = @Schema(implementation = LoginResponseDTO.class))
+                                    ),
+                                    @ApiResponse(responseCode = "400", description = "Solicitud inválida"),
+                                    @ApiResponse(responseCode = "401", description = "Credenciales inválidas"),
+                                    @ApiResponse(responseCode = "404", description = "Usuario no encontrado"),
+                                    @ApiResponse(responseCode = "403", description = "Rol no permitido")
                             }
                     )
             )

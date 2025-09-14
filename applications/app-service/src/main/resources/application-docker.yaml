@@ -1,0 +1,80 @@
+# src/main/resources/application-docker.yml
+server:
+  port: 8082
+  address: 0.0.0.0
+
+spring:
+  application:
+    name: "ms-autenticacion"
+  devtools:
+    add-properties: false
+
+  # Config R2DBC -> apunta al servicio 'postgres' en Docker.
+  r2dbc:
+    url: r2dbc:postgresql://${adapters.r2dbc.host}:${adapters.r2dbc.port}/${adapters.r2dbc.database}
+    username: ${adapters.r2dbc.username}
+    password: ${adapters.r2dbc.password}
+    properties:
+      schema: ${adapters.r2dbc.schema}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "health,info,prometheus"
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: always
+
+# Ajusta CORS para desarrollo desde el host
+cors:
+  allowed-origins: "http://localhost:4200,http://127.0.0.1:4200,http://host.docker.internal:4200"
+
+routes:
+  paths:
+    usuarios: "/api/v1/usuarios"
+    usuariosByMail: "/api/v1/usuarios/{mail}"
+
+# Bloque usado por tus @Configuration (con defaults y soportando env vars)
+adapters:
+  r2dbc:
+    host: ${POSTGRES_HOST:postgres}
+    port: ${POSTGRES_PORT:5432}
+    database: ${POSTGRES_DB:crediya}
+    schema: ${POSTGRES_SCHEMA:auth}
+    username: ${POSTGRES_USER:admin}
+    password: ${POSTGRES_PASSWORD:admin123}
+
+logging:
+  level:
+    org.springframework.data.r2dbc: DEBUG
+    org.springframework.r2dbc.core: DEBUG
+    io.r2dbc.postgresql.QUERY: DEBUG
+    io.r2dbc.postgresql.PARAM: DEBUG
+
+springdoc:
+  api-docs:
+    path: /api-docs
+    enabled: true
+  swagger-ui:
+    path: /swagger-ui.html
+    enabled: true
+    operations-sorter: method
+    tags-sorter: alpha
+    doc-expansion: none
+    disable-swagger-default-url: true
+    display-request-duration: true
+  packages-to-scan: co.com.crediya.autenticacion.api
+  paths-to-match: /api/**
+  default-consumes-media-type: application/json
+  default-produces-media-type: application/json
+  show-actuator: false
+
+app:
+  jwt:
+    secret: "d1UqRjMSI9She0oFsvhG/PIV1A/NN1Ke9RTohM/vVfE55Kle3Defav4aNLH01O7ocomXcnwXAAKqur8bg7CHdA=="
+    issuer: "crediya-auth"
+    access-minutes: 30
+    refresh-days: 7
