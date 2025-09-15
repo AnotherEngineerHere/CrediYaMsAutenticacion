@@ -83,7 +83,7 @@ public class SecurityConfig {
                         // User registration only for ADMIN or ASESOR roles
                         .pathMatchers(HttpMethod.POST, "/api/v1/usuarios").hasAnyRole("ADMIN", "ASESOR")
                         // User queries for authenticated users (including get by email)
-                        .pathMatchers(HttpMethod.GET, "/api/v1/usuarios/**").authenticated()
+                        .pathMatchers(HttpMethod.GET, "/api/v1/usuarios/**").permitAll()
                         // Other user operations for ADMIN only
                         .pathMatchers(HttpMethod.PUT, "/api/v1/usuarios/**").hasRole("ADMIN")
                         .pathMatchers(HttpMethod.DELETE, "/api/v1/usuarios/**").hasRole("ADMIN")
